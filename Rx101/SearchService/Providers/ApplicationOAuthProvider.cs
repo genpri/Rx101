@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OAuth;
-using SearchService.Models;
 
 namespace SearchService.Providers
 {
@@ -19,10 +14,7 @@ namespace SearchService.Providers
 
         public ApplicationOAuthProvider(string publicClientId)
         {
-            if (publicClientId == null)
-            {
-                throw new ArgumentNullException("publicClientId");
-            }
+            if (publicClientId == null) throw new ArgumentNullException(paramName: "publicClientId");
 
             _publicClientId = publicClientId;
         }
@@ -31,31 +23,29 @@ namespace SearchService.Providers
         {
             var userManager = context.OwinContext.GetUserManager<ApplicationUserManager>();
 
-            ApplicationUser user = await userManager.FindAsync(context.UserName, context.Password);
+            var user = await userManager.FindAsync(userName: context.UserName, password: context.Password);
 
             if (user == null)
             {
-                context.SetError("invalid_grant", "The user name or password is incorrect.");
+                context.SetError(error: "invalid_grant", errorDescription: "The user name or password is incorrect.");
                 return;
             }
 
-            ClaimsIdentity oAuthIdentity = await user.GenerateUserIdentityAsync(userManager,
-               OAuthDefaults.AuthenticationType);
-            ClaimsIdentity cookiesIdentity = await user.GenerateUserIdentityAsync(userManager,
-                CookieAuthenticationDefaults.AuthenticationType);
+            var oAuthIdentity = await user.GenerateUserIdentityAsync(manager: userManager,
+                authenticationType: OAuthDefaults.AuthenticationType);
+            var cookiesIdentity = await user.GenerateUserIdentityAsync(manager: userManager,
+                authenticationType: CookieAuthenticationDefaults.AuthenticationType);
 
-            AuthenticationProperties properties = CreateProperties(user.UserName);
-            AuthenticationTicket ticket = new AuthenticationTicket(oAuthIdentity, properties);
-            context.Validated(ticket);
+            var properties = CreateProperties(userName: user.UserName);
+            var ticket = new AuthenticationTicket(identity: oAuthIdentity, properties: properties);
+            context.Validated(ticket: ticket);
             context.Request.Context.Authentication.SignIn(cookiesIdentity);
         }
 
         public override Task TokenEndpoint(OAuthTokenEndpointContext context)
         {
-            foreach (KeyValuePair<string, string> property in context.Properties.Dictionary)
-            {
-                context.AdditionalResponseParameters.Add(property.Key, property.Value);
-            }
+            foreach (var property in context.Properties.Dictionary)
+                context.AdditionalResponseParameters.Add(key: property.Key, value: property.Value);
 
             return Task.FromResult<object>(null);
         }
@@ -63,10 +53,7 @@ namespace SearchService.Providers
         public override Task ValidateClientAuthentication(OAuthValidateClientAuthenticationContext context)
         {
             // Resource owner password credentials does not provide a client ID.
-            if (context.ClientId == null)
-            {
-                context.Validated();
-            }
+            if (context.ClientId == null) context.Validated();
 
             return Task.FromResult<object>(null);
         }
@@ -75,12 +62,9 @@ namespace SearchService.Providers
         {
             if (context.ClientId == _publicClientId)
             {
-                Uri expectedRootUri = new Uri(context.Request.Uri, "/");
+                var expectedRootUri = new Uri(baseUri: context.Request.Uri, relativeUri: "/");
 
-                if (expectedRootUri.AbsoluteUri == context.RedirectUri)
-                {
-                    context.Validated();
-                }
+                if (expectedRootUri.AbsoluteUri == context.RedirectUri) context.Validated();
             }
 
             return Task.FromResult<object>(null);
@@ -90,9 +74,9 @@ namespace SearchService.Providers
         {
             IDictionary<string, string> data = new Dictionary<string, string>
             {
-                { "userName", userName }
+                {"userName", userName}
             };
-            return new AuthenticationProperties(data);
+            return new AuthenticationProperties(dictionary: data);
         }
     }
 }

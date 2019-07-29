@@ -5,34 +5,34 @@ using System.Reactive.Subjects;
 
 namespace HistoricalScheduler
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            Subject<int> numbers = new Subject<int>();
-            var historicalScheduler = new System.Reactive.Concurrency.HistoricalScheduler(new DateTime(2015, 11, 21, 17, 10, 0));
-            historicalScheduler.Schedule(new DateTime(2015, 11, 21, 17, 10, 0), () => numbers.OnNext(1));
-            historicalScheduler.Schedule(new DateTime(2015, 11, 21, 17, 11, 0), () => numbers.OnNext(2));
-            historicalScheduler.Schedule(new DateTime(2015, 11, 21, 17, 32, 0), () => numbers.OnNext(3));
-            historicalScheduler.Schedule(new DateTime(2015, 11, 21, 17, 39, 0), () => numbers.OnNext(4));
-            historicalScheduler.Schedule(new DateTime(2015, 11, 21, 17, 51, 0), () => historicalScheduler.Stop());
+            using (var numbers = new Subject<int>())
+            {
+                var historicalScheduler =
+                    new System.Reactive.Concurrency.HistoricalScheduler(new DateTime(2015, 11, 21, 17, 10, 0));
+                historicalScheduler.Schedule(new DateTime(2015, 11, 21, 17, 10, 0), () => numbers.OnNext(1));
+                historicalScheduler.Schedule(new DateTime(2015, 11, 21, 17, 11, 0), () => numbers.OnNext(2));
+                historicalScheduler.Schedule(new DateTime(2015, 11, 21, 17, 32, 0), () => numbers.OnNext(3));
+                historicalScheduler.Schedule(new DateTime(2015, 11, 21, 17, 39, 0), () => numbers.OnNext(4));
+                historicalScheduler.Schedule(new DateTime(2015, 11, 21, 17, 51, 0), () => historicalScheduler.Stop());
 
-            numbers.AsObservable()
-                .Buffer(TimeSpan.FromMinutes(20), historicalScheduler)
-                .Subscribe(buffer =>
-                {
-                    Console.WriteLine("time is: {0}", historicalScheduler.Now);
-                    Console.WriteLine("Buffer:");
-                    foreach (var x in buffer)
+                numbers.AsObservable()
+                    .Buffer(TimeSpan.FromMinutes(20), scheduler: historicalScheduler)
+                    .Subscribe(buffer =>
                     {
-                        Console.WriteLine("\t{0}", x);
-                    }
-                });
+                        Console.WriteLine(format: "time is: {0}", arg0: historicalScheduler.Now);
+                        Console.WriteLine(value: "Buffer:");
+                        foreach (var x in buffer) Console.WriteLine(format: "\t{0}", arg0: x);
+                    });
 
-            historicalScheduler.Start();
+                historicalScheduler.Start();
 
-            Console.WriteLine("Press <enter> to continue");
-            Console.ReadLine();
+                Console.WriteLine(value: "Press <enter> to continue");
+                Console.ReadLine();
+            }
         }
     }
 }

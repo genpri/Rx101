@@ -7,7 +7,7 @@
         mc:Ignorable="d" FontSize="27"
         Title="Reactive Search" Height="350" Width="525">
     <DockPanel>
-        <TextBox x:Name="SearchBox" DockPanel.Dock="Top"></TextBox>
-        <ListBox x:Name="SearchResults"></ListBox>
+        <TextBox x:Name="SearchBox" DockPanel.Dock="Top" />
+        <ListBox x:Name="SearchResults" />
     </DockPanel>
 </Window>

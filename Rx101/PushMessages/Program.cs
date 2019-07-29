@@ -1,42 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PushMessages
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var mgr = new SocialNetworksManager();
 
             var stopwatch = Stopwatch.StartNew();
-            Console.WriteLine("Loading messages");
-            var messages = mgr.LoadMessages("Rx");
-            foreach (var msg in messages)
-            {
-                Console.WriteLine($"Iterated:{msg} \t after {stopwatch.Elapsed}");
-            }
+            Console.WriteLine(value: "Loading messages");
+            var messages = mgr.LoadMessages(hashtag: "Rx");
+            foreach (var msg in messages) Console.WriteLine($"Iterated:{msg} \t after {stopwatch.Elapsed}");
 
-            Console.WriteLine("--------------------");
-            Console.WriteLine("Interactive messages");
+            Console.WriteLine(value: "--------------------");
+            Console.WriteLine(value: "Interactive messages");
             stopwatch.Restart();
             var interactiveMgr = new InteractiveSocialNetworksManager();
             interactiveMgr.MessageAvailable +=
                 (sender, msg) => Console.WriteLine($"Observed:{msg} \t after {stopwatch.Elapsed}");
-            interactiveMgr.LoadMessages("Rx");
+            interactiveMgr.LoadMessages(hashtag: "Rx");
 
 
-            Console.WriteLine("--------------------");
-            Console.WriteLine("Observing messages");
+            Console.WriteLine(value: "--------------------");
+            Console.WriteLine(value: "Observing messages");
             stopwatch.Restart();
-            
-            mgr.ObserveLoadedMessages("Rx")
+
+            mgr.ObserveLoadedMessages(hashtag: "Rx")
                 .Subscribe(msg => Console.WriteLine($"Observed:{msg} \t after {stopwatch.Elapsed}"),
-                    ex => { /*OnError*/ },
-                    () => { /*OnCompleted*/ });
+                    ex =>
+                    {
+                        /*OnError*/
+                    },
+                    () =>
+                    {
+                        /*OnCompleted*/
+                    });
 
             Console.ReadLine();
         }

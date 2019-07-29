@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Windows;
 
 namespace ReactiveSearch
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    ///     Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        readonly SearchServiceClient _client = new SearchServiceClient();
+        private readonly SearchServiceClient _client = new SearchServiceClient();
         private IDisposable _subscription;
 
         public MainWindow()
@@ -21,36 +20,42 @@ namespace ReactiveSearch
 
             //Install-Package System.Reactive
 
-            int minTextLength = 3;
+            var minTextLength = 3;
 
             var searches = Observable.Empty<string>();
-                
 
-            _subscription = 
+
+            _subscription =
                 searches.Subscribe(
-                        results => SearchResults.ItemsSource = results,
-                        err => { Debug.WriteLine(err); },
-                        () => { /* OnCompleted */ });
-            
+                    results => SearchResults.ItemsSource = results,
+                    err => { Debug.WriteLine(value: err); },
+                    () =>
+                    {
+                        /* OnCompleted */
+                    });
 
 
             #region clearing results for short search terms
-            Observable.FromEventPattern(SearchBox, "TextChanged")
-                    .Select(_ => SearchBox.Text)
-                    .Where(txt => txt.Length < minTextLength)
-                    .ObserveOnDispatcher()
-                    .Subscribe(
-                        results => SearchResults.ItemsSource = Enumerable.Empty<string>(),
-                        err => { Debug.WriteLine(err); },
-                        () => { /* OnCompleted */ });
+
+            Observable.FromEventPattern(target: SearchBox, eventName: "TextChanged")
+                .Select(_ => SearchBox.Text)
+                .Where(txt => txt.Length < minTextLength)
+                .ObserveOnDispatcher()
+                .Subscribe(
+                    results => SearchResults.ItemsSource = Enumerable.Empty<string>(),
+                    err => { Debug.WriteLine(value: err); },
+                    () =>
+                    {
+                        /* OnCompleted */
+                    });
+
             #endregion
         }
 
         #region Backup
 
-        void ReactiveSearch()
+        private void ReactiveSearch()
         {
-
             //1. Create Observable from TextChanged event of the SearchBox
             //2. Select the text that was entered
             //3. Keep only strings with >3 characters
@@ -63,33 +68,40 @@ namespace ReactiveSearch
             var client = new SearchServiceClient();
 
             _subscription =
-               Observable.FromEventPattern(SearchBox, nameof(SearchBox.TextChanged))
-                   .Select(_ => SearchBox.Text)
-                   .Where(txt => txt.Length >= 3)
-                   .Throttle(TimeSpan.FromSeconds(0.5))
-                   .DistinctUntilChanged()
-                   .Select(txt => _client.SearchAsync(txt))
-                   .Switch()
-                   .ObserveOnDispatcher()
-                   .Subscribe(
-                       results => SearchResults.ItemsSource = results,
-                       err => { Debug.WriteLine(err); },
-                       () => { /* OnCompleted */ });
+                Observable.FromEventPattern(target: SearchBox, nameof(SearchBox.TextChanged))
+                    .Select(_ => SearchBox.Text)
+                    .Where(txt => txt.Length >= 3)
+                    .Throttle(TimeSpan.FromSeconds(0.5))
+                    .DistinctUntilChanged()
+                    .Select(txt => _client.SearchAsync(searchTerm: txt))
+                    .Switch()
+                    .ObserveOnDispatcher()
+                    .Subscribe(
+                        results => SearchResults.ItemsSource = results,
+                        err => { Debug.WriteLine(value: err); },
+                        () =>
+                        {
+                            /* OnCompleted */
+                        });
 
 
             #region clearing results for short search terms
-            Observable.FromEventPattern(SearchBox, "TextChanged")
-                    .Select(_ => SearchBox.Text)
-                    .Where(txt => txt.Length < 3)
-                    .ObserveOnDispatcher()
-                    .Subscribe(
-                        results => SearchResults.ItemsSource = Enumerable.Empty<string>(),
-                        err => { Debug.WriteLine(err); },
-                        () => { /* OnCompleted */ });
+
+            Observable.FromEventPattern(target: SearchBox, eventName: "TextChanged")
+                .Select(_ => SearchBox.Text)
+                .Where(txt => txt.Length < 3)
+                .ObserveOnDispatcher()
+                .Subscribe(
+                    results => SearchResults.ItemsSource = Enumerable.Empty<string>(),
+                    err => { Debug.WriteLine(value: err); },
+                    () =>
+                    {
+                        /* OnCompleted */
+                    });
+
             #endregion
-
-
         }
+
         #endregion
     }
 }

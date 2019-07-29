@@ -5,20 +5,20 @@ using System.Threading.Tasks;
 
 namespace ReactiveSearch
 {
-    class SearchServiceClient
+    internal class SearchServiceClient
     {
-        const string BaseAddress = "http://localhost.fiddler:2458/api/Search?searchTerm=";
-        private HttpClient _httpClient;
+        private const string BaseAddress = "http://localhost.fiddler:2458/api/Search?searchTerm=";
+        private readonly HttpClient _httpClient;
 
         public SearchServiceClient()
         {
-            
-
             _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue(mediaType: "application/json"));
 
-            var t=SearchAsync("rx");//making a request to warm the server
+            var t = SearchAsync(searchTerm: "rx"); //making a request to warm the server
         }
+
         public async Task<IEnumerable<string>> SearchAsync(string searchTerm)
         {
             var response = await _httpClient.GetAsync(BaseAddress + searchTerm);

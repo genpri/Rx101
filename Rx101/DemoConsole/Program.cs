@@ -1,31 +1,22 @@
 ﻿using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DemoConsole
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Observable.Range(1, 10)
-                .Subscribe(x => Console.WriteLine(x));
+                .Subscribe(x => Console.WriteLine(value: x));
 
             var subscription =
                 Observable.Interval(TimeSpan.FromSeconds(1))
-                    .Subscribe(x => Console.WriteLine(x));
+                    .Subscribe(x => Console.WriteLine(value: x));
 
 
-
-
-            Console.WriteLine("Press any key to continue...");
+            Console.WriteLine(value: "Press any key to continue...");
             Console.ReadLine();
-
-
         }
     }
 }
